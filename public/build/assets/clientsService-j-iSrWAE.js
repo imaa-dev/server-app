@@ -1,0 +1,1 @@
+import{a as t}from"./AxiosIntance-C2SyFC4X.js";import{e as a}from"./errorHandler-CJPEgJ2H.js";const o=async r=>{try{return(await t.delete(`/delete-client/${r}`)).data}catch(e){return a(e)}},c=async r=>{try{return(await t.post("/create/user-client",r)).data}catch(e){return a(e)}};export{c,o as d};

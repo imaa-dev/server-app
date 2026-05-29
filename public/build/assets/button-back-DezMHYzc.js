@@ -1,0 +1,1 @@
+import{j as t}from"./app-CrjpriNE.js";import{U as o}from"./undo-2-DAwXfswq.js";const e=()=>t.jsx("div",{className:"relative p-5",children:t.jsx("button",{type:"button",className:"flex",onClick:()=>window.history.back(),children:t.jsx(o,{})})});export{e as B};
