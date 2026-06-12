@@ -28,9 +28,9 @@ class OrganizationDAO
         return Organization::where('user_id', $userId)->with('file')->get();
     }
 
-    public function getActive(int $userId): ?Organization
+    public function getByUserIdWithSubscription(int $userId) : Collection
     {
-        return Organization::where('user_id', $userId)->where('active', true)->with('file')->first();
+        return Organization::where('user_id', $userId)->with('file')->with('subscription')->get();
     }
 
     /**
@@ -46,7 +46,6 @@ class OrganizationDAO
             'user_id' => $data->user_id,
             'name' => $data->name,
             'description' =>  $data->description,
-            'active' => $data->active
         ]);
         return $organization;
     }

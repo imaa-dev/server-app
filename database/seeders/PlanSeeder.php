@@ -17,15 +17,15 @@ class PlanSeeder extends Seeder
             'price' => 0,
             'interval' => 'monthly',
             'duration_days' => 30,
-            'features' => 'Acceso básico a funciones del taller y tienda.',
+            'features' => 'Acceso básico con tiempo limitado para las funciones del taller',
         ]);
 
         Plan::create([
             'name' => 'Premium',
-            'price' => 10.000,
+            'price' => 5.000,
             'interval' => 'monthly',
             'duration_days' => 30,
-            'features' => 'Acceso completo, chat entre clientes, soporte técnico y más.',
+            'features' => 'Acceso completo para las funciones del taller',
         ]);
     }
 }

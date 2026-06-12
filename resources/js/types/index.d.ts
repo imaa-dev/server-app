@@ -61,7 +61,7 @@ export interface OrganizationData {
     file: FileMeta | null;
     name: string;
     description: string;
-    active: number;
+    status: string;
     phone: string;
     address: string;
     email: string;
@@ -71,14 +71,25 @@ export interface OrganizationData {
     website: string;
     created_at: string;
     updated_at: string;
+    subscription: SubscriptionData
 }
 export interface ProductData {
     id: number;
-    brand: string,
-    model: string,
-    name: string
+    brand: string;
+    model: string;
+    name: string;
 }
-export interface Client{
+export interface CreateProductData {
+    brand: string;
+    model: string;
+    name: string;
+}
+export interface CreateClientData{
+    name: string;
+    email: string;
+    phone: string;
+}
+export interface Client {
     id: number;
     name: string;
     email: string;
@@ -194,4 +205,16 @@ export interface ReasonResponse {
     success: boolean;
     data: Reasons[];
 }
-
+export interface SubscriptionData {
+    id: number;
+    organization_id: number;
+    plan_id: number;
+    provider: string;
+    provider_subscription_id: string;
+    provider_customer_id: string;
+    start_at: string;
+    ends_at: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+}

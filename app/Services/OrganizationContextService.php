@@ -21,7 +21,7 @@ class OrganizationContextService
     public function setActive(int $organizationId): void
     {
         session([
-            'organization_id' => $organizationId
+            'tenant_id' => $organizationId
         ]);
     }
 

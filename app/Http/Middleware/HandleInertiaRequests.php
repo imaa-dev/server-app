@@ -44,7 +44,6 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
         $organizationId = session('tenant_id');
-        Log::error($organizationId);
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -74,6 +73,7 @@ class HandleInertiaRequests extends Middleware
                 'message' => fn () => $request->session()->get('message'),
                 'error' => fn () => $request->session()->get('error'),
                 'status' => fn () => $request->session()->get('status'),
+                'error_code' => fn () => $request->session()->get('error_code'),
             ],
         ];
     }

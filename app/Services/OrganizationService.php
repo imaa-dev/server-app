@@ -28,11 +28,6 @@ class OrganizationService
         return $this->organizationDAO->getByUserId($id);
     }
 
-    public function getActive(int $id)
-    {
-        return $this->organizationDAO->getActive($id);
-    }
-
     public function getById(int $id)
     {
         return $this->organizationDAO->getById($id);
@@ -92,7 +87,7 @@ class OrganizationService
                     Storage::disk('public')->delete($organization->file->path);
                 }
             }
-            
+
             $organizationUpdate = $this->organizationDAO->updateOrganization($organization, $data);
             if( $data->active === true){
                 $this->organizationContext->setActive($organizationUpdate->id);
@@ -154,10 +149,14 @@ class OrganizationService
         }
     }
 
-    public function getByUserId(int $userId) 
+    public function getByUserId(int $user_id)
     {
-        return $this->organizationDAO->getByUserId($userId);
+        return $this->organizationDAO->getByUserId($user_id);
     }
 
+    public function getByUserIdWithSubscription(int $user_id)
+    {
+        return $this->organizationDAO->getByUserIdWithSubscription($user_id);
+    }
 
 }
