@@ -124,6 +124,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/paypal/cancel', [PayPalController::class, 'cancel']);
     Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle']);
     
+    Route::get('/debug-queue', function () {
+    return [
+        'queue.default' => config('queue.default'),
+        'env.queue' => env('QUEUE_CONNECTION'),
+        'php' => PHP_VERSION,
+        'laravel' => app()->version(),
+    ];
+});
 });
 
 Route::get('approve/spare-parts/{token}', [SparePartsController::class, 'approve'])->name('spare.parts.approve');
