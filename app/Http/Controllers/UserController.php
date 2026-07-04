@@ -11,6 +11,7 @@ use App\Services\UserService;
 use App\Services\OrganizationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
@@ -34,19 +35,76 @@ class UserController extends Controller
 
     public function listUsers(Request $request)
     {
-        $organizationId = session('tenant_id');
-        $users = $this->userService->getUserCreatedByOrganizationWithFile($organizationId);
+        $organization_id = session('tenant_id');
         $organizations = $this->organizationService->getAllByUser($request->user()->id);
+        $filters = $request->only([
+            'search',
+            'email',
+            'rol',
+            'sort',
+            'direction',
+            'page',
+            'per_page',
+        ]);
+        $users = $this->userService
+            ->getUserCreatedByOrganizationWithFile(
+                $organization_id,
+                $filters
+            );
+
         return Inertia::render('users/users', [
-            'users' => $users,
+            'users' => $users->items(),
             'organizations' => $organizations,
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'last_page'    => $users->lastPage(),
+                'per_page'     => $users->perPage(),
+                'total'        => $users->total(),
+                'from'         => $users->firstItem(),
+                'to'           => $users->lastItem(),
+            ],
+        ]);
+    }
+    public function filterUsers(Request $request): JsonResponse
+    {
+        $organizationId = session('tenant_id');
+
+        $filters = $request->only([
+            'search',
+            'email',
+            'rol',
+            'sort',
+            'direction',
+            'page',
+            'per_page',
+        ]);
+
+        $users = $this->userService
+            ->getUserCreatedByOrganizationWithFile(
+                $organizationId,
+                $filters
+            );
+
+        return response()->json([
+            'success' => true,
+
+            'users' => $users->items(),
+
+            'pagination' => [
+                'current_page' => $users->currentPage(),
+                'last_page'    => $users->lastPage(),
+                'per_page'     => $users->perPage(),
+                'total'        => $users->total(),
+                'from'         => $users->firstItem(),
+                'to'           => $users->lastItem(),
+            ],
         ]);
     }
 
     public function listClients(Request $request)
     {
-        $organizationId = session('tenant_id');
-        $clients = $this->userService->listClients($organizationId);
+        $organization_id = session('tenant_id');
+        $clients = $this->userService->listClients($organization_id);
         return Inertia::render('users/clients', [
             'clients' => $clients
         ]);    
@@ -54,12 +112,9 @@ class UserController extends Controller
     public function updateClient(Request $request)
     {
         $data = $request->only(['id', 'name', 'email', 'phone']);
-
-        $res = $this->userService->update($data);
-
-        session()->flash('message', $res->message);
-
-        return redirect()->route('users.client.list.view');
+        $user = $this->userService->update($data);
+        return redirect()->route('user.client.view')
+            ->with('message', 'Usuario cliente actualizado satisfactoriamente');
     }
     public function getUpdateClient(User $user)
     {
@@ -72,34 +127,30 @@ class UserController extends Controller
     public function storeClient(StoreClientRequest $request)
     {
         $dto = new CreateClientDTO($request);
-        $result = $this->userService->createClient($dto);
+        $client = $this->userService->createClient($dto);
         return response()->json([
-            'success' => $result->success,
-            'message' => $result->message,
-            'code'    => $result->code,
-            'data'    => $result->data,
+            'success' => true,
+            'message' => 'Usuario cliente creado satisfactoriamente',
+            'client' => $client
         ]);
     }
 
     public function storeTechnician(StoreTechnicianRequest $request)
     {
         $dto = new CreateTechnicianDTO($request);
-        $result =  $this->userService->createTechnician($dto);
+        $this->userService->createTechnician($dto);
         return response()->json([
-            'success' => $result->success,
-            'message' => $result->message,
-            'code'    => $result->code,
-            'data'    => $result->data,
+            'success' => true,
+            'message' => 'Usuario tecnico creado satisfactoriamente',
         ]);
     }
 
     public function deleteClient(Request $request)
     {
-        $res = $this->userService->deleteClient($request->id);
+        $this->userService->deleteClient($request->id);
         return response()->json([
-            'success' => $res->success,
-            'code'    => $res->code,
-            'message' => $res->message
+            'success' => true,
+            'message' => 'Usuario eliminado satisfactoriamente'
         ]);
     }
 }

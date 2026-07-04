@@ -8,6 +8,10 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use App\Http\Middleware\AllowOptions;
 use App\Http\Middleware\PreflightMiddleware;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Auth\Access\AuthorizationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -33,8 +37,45 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.organization' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'tenant' => \App\Http\Middleware\ResolveTenant::class,
             'organization.active' => \App\Http\Middleware\EnsureOrganizationIsActive::class,
+            'select.organization' => \App\Http\Middleware\EnsureOrganizationSelected::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+         $exceptions->render(function (\Throwable $e, $request) {
+
+        if (! $request->expectsJson()) {
+            return null; 
+        }
+        if ($e instanceof ValidationException) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Los datos enviados no son válidos.',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+        if ($e instanceof HttpExceptionInterface) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], $e->getStatusCode());
+        }
+        if ($e instanceof ModelNotFoundException) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El recurso solicitado no existe.',
+            ], 404);
+        }
+        if ($e instanceof AuthorizationException) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para realizar esta acción.',
+            ], 403);
+        }
+        return response()->json([
+            'success' => false,
+            'message' => config('app.debug')
+                ? $e->getMessage()
+                : 'Ha ocurrido un error inesperado.',
+        ], 500);
+    });
     })->create();

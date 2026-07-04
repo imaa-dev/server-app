@@ -11,6 +11,7 @@ use App\Services\ProductService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
@@ -36,20 +37,80 @@ class ProductController extends Controller
                 $message = 'No tienes una organización asignada. Contacta a un administrador.';
             }
 
-            return Inertia::render('product/product', [
+             return Inertia::render('product/product', [
                 'notOrganization' => true,
                 'products' => [],
+                'pagination' => null,
+                'filters' => [],
                 'message' => $message,
-                'user' => $user->rol
+                'user_rol' => $user->rol,
             ]);
 
         }
-        $products = $this->productService->getByOrganization($organizationId);
+
+        $filters = $request->only([
+            'search',
+            'brand',
+            'model',
+            'sort',
+            'direction',
+            'page',
+            'per_page',
+        ]);
+
+        $products = $this->productService->getByOrganization($organizationId, $filters);
         return Inertia::render('product/product', [
             'notOrganization' => false,
-            'products' => $products,
+
+            'products' => $products->items(),
+
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'last_page'    => $products->lastPage(),
+                'per_page'     => $products->perPage(),
+                'total'        => $products->total(),
+                'from'         => $products->firstItem(),
+                'to'           => $products->lastItem(),
+            ],
+
+            'filters' => $filters,
+
             'message' => null,
-            'user_rol' => $user->rol
+            'user_rol' => $user->rol,
+        ]);
+    }
+    public function filterProducts(Request $request): JsonResponse
+    {
+        $organizationId = session('tenant_id');
+
+        $filters = $request->only([
+            'search',
+            'brand',
+            'model',
+            'sort',
+            'direction',
+            'page',
+            'per_page',
+        ]);
+
+        $products = $this->productService->getByOrganization(
+            $organizationId,
+            $filters
+        );
+
+        return response()->json([
+            'success' => true,
+
+            'products' => $products->items(),
+
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'last_page'    => $products->lastPage(),
+                'per_page'     => $products->perPage(),
+                'total'        => $products->total(),
+                'from'         => $products->firstItem(),
+                'to'           => $products->lastItem(),
+            ],
         ]);
     }
 
@@ -60,13 +121,12 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         $dto = new CreateProductDTO($request);
-        $res = $this->productService->create($dto);
+        $product = $this->productService->create($dto);
         return response()->json([
-            'success' => $res->success,
-            'code'    => $res->code,
-            'message' => $res->message,
-            'data'    => $res->data
-        ], $res->code);
+            'success' => true,
+            'message' => 'Producto creado satisfactoriamente',
+            'product'    => $product
+        ]);
     }
     public function getUpdate(Product $product)
     {
@@ -78,29 +138,27 @@ class ProductController extends Controller
     public function update(StoreProductRequest $request)
     {
         $dto = new UpdateProductDTO($request);
-        $res = $this->productService->update($dto);
-        session()->flash('message', $res->message);
-        return redirect()->route('products.list.view');
+        $this->productService->update($dto);
+        return redirect()->route('products.list.view')
+            ->with('message', 'Producto actualizado satisfactoriamente');
     }
 
     public function delete($id)
     {
-        $result = $this->productService->delete($id);
+        $this->productService->delete($id);
         return response()->json([
-            'success' => $result->success,
-            'message' => $result->message,
-            'code'    => $result->code,
+            'success' => true,
+            'message' => 'Producto eliminado satisfactoriamente',
         ]);
     }
 
     public function get()
     {
-        $result = $this->productService->getProducts();
+        $product = $this->productService->getProducts();
         return response()->json([
-            'success' => $result->success,
-            'message' => $result->message,
-            'code'    => $result->code,
-            'data'    => $result->data,
+            'success' => true,
+            'message' => 'Producto obtenido satisfactoriamente',
+            'data'    => $product,
         ]);
     }
 }

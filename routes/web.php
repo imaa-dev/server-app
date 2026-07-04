@@ -10,6 +10,9 @@ use App\Http\Controllers\SparePartsController;
 use App\Http\Controllers\DiagnosisController;
 use App\Http\Controllers\UserOrganizationController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\RepairDocumentsController;
+use App\Http\Controllers\PayPalController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -53,6 +56,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('update/product', [ProductController::class, 'update'])->name('products.update')->middleware('organization.active');
     Route::delete('delete/product/{id}', [ProductController::class, 'delete'])->name('products.destroy')->middleware('organization.active');
     Route::post('products', [ProductController::class, 'get'])->name('products.get.all');
+    Route::get('/product/filter', [ProductController::class, 'filterProducts'])
+    ->name('products.filter');
 
     // Organization routes
     Route::get('list/organization', [OrganizationController::class, 'list'])->name('organization.list.view');
@@ -75,6 +80,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('update-client', [UserController::class, 'updateClient'])->name('users.client.update')->middleware('organization.active');
     Route::post('/create/user-technician', [UserController::class, 'storeTechnician'])->name('user.technician.store')->middleware('organization.active');
     Route::get('clients', [UserController::class, 'listClients'])->name('user.client.view');
+    Route::get('/users/filter', [UserController::class, 'filterUsers'])
+        ->name('users.filter');
 
     // File routes
     Route::delete('delete-image-service/{id}', [FileController::class, 'removeImage'])->name('service.file.delete');
@@ -99,6 +106,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Organization User
     Route::post('store/user-technician-organization', [UserOrganizationController::class, 'store'])->name('user.organization.technician');
+
+    // Subscription
+    Route::get('payments-subscriptions', [SubscriptionController::class, 'showSubscriptionForm'])->name('subscription.form.view');
+
+    // Repair Documents
+    Route::get('repair-documents', [RepairDocumentsController:: class, 'listDocuments'])->name('repair.documents.view');
+    Route::get(
+        '/reports/filter',
+        [RepairDocumentsController::class, 'filterDocuments']
+    );
+
+    // Payment
+    Route::post('/paypal/subscriptions/create', [PayPalController::class, 'create']);
+    Route::post('/paypal/subscribe', [PayPalController::class, 'create']);
+    Route::get('/paypal/success', [PayPalController::class, 'success'])->name('payments.subscriptions.view');
+    Route::get('/paypal/cancel', [PayPalController::class, 'cancel']);
+    Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle']);
+    
 });
 
 Route::get('approve/spare-parts/{token}', [SparePartsController::class, 'approve'])->name('spare.parts.approve');

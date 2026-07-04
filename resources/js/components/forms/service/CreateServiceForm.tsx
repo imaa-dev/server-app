@@ -24,7 +24,7 @@ const CreateServiceForm = ({clients, products}: ClientDataProp & ProductDataProp
     const {showLoading, hideLoading} = useLoading();
     const {openModal} = useModal();
     const {state, dispatch} = useContext(FormContext);
-
+    console.log(clients, products);
     const handleImageChange = (files: File[]) => {
         const urls = Array.from(files).map((file) => URL.createObjectURL(file));
         setUploadImage((prev) => [...prev, ...urls]);
@@ -80,10 +80,10 @@ const CreateServiceForm = ({clients, products}: ClientDataProp & ProductDataProp
                     error(flash.error);
                 }
             },
-            onError: (e) => {
+            onError: ({message}) => {
                 dispatch({ type: 'CLEAN_REASON_NOTE' });
                 dispatch({ type: 'CLEAN_FORM' })
-
+                error(message);
                 console.log(e, "ERRORS")
             }
         })

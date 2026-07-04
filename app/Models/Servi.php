@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Servi extends Model
 {
 
-     use HasFactory;	
+     use HasFactory;
 
      protected $fillable = [
         'uuid',
@@ -56,5 +56,33 @@ class Servi extends Model
     public function spareparts()
     {
         return $this->hasMany(SpareParts::class);
+    }
+
+    public function scopeForOrganization($query, int $organization_id)
+    {
+        return $query->where('organization_id', $organization_id);
+    }
+
+    public function scopeForStatus($query, int $status_id)
+    {
+        return $query->where('status_id', $status_id);
+    }
+
+    public function scopeForServiceId($query, int $service_id)
+    {
+        return $query->where('id', $service_id);
+    }
+
+    public function scopeWithFullRelations($query)
+    {
+        return $query->with([
+            'file',
+            'product',
+            'client',
+            'reasons',
+            'status',
+            'diagnosis',
+            'spareparts'
+        ]);
     }
 }

@@ -1,34 +1,40 @@
 import api from '@/api/AxiosIntance';
-import { CreateProductData, ProductData } from '@/types';
-import { errorHandler } from '@/utils/errorHandler';
+import { CreateProductData, ProductData, ProductFilters } from '@/types';
 
 const deleteProduct = async (id: number): Promise <{ code: number; message: string; success: boolean }> => {
-    try {
-        const response = await api.delete(`/delete/product/${id}`)
-        return response.data
-    } catch (error) {
-        return errorHandler(error)
-    }
+    const response = await api.delete(`/delete/product/${id}`)
+    return response.data
 }
 
 type CreateProductSuccess = {
-    code: number | string;
     message: string | Record<keyof ProductData, string>;
     success: boolean;
-    data?: ProductData;
+    product?: ProductData;
     errors?: Record<string, string[]>;
 };
 
 const createProduct = async (data: CreateProductData): Promise <CreateProductSuccess> => {
-    try {
-        const response = await api.post("/create/product", data, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        return response.data
-    } catch (error : unknown) {
-        return errorHandler(error);
-    }
+    const response = await api.post("/create/product", data, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+    return response.data
+
 }
-export { deleteProduct, createProduct }
+
+const getProducts = async (
+    filters: ProductFilters
+) => {
+
+    const response = await api.get(
+        "/product/filter",
+        {
+            params: filters
+        }
+    );
+
+    return response.data;
+
+};
+export { deleteProduct, createProduct, getProducts }
