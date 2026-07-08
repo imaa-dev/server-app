@@ -15,6 +15,7 @@ use App\Http\Controllers\RepairDocumentsController;
 use App\Http\Controllers\PayPalController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 Route::get('/', function () {
 
@@ -96,8 +97,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('create-spare-parts-notificate', [SparePartsController::class, 'spareParts'])->name('spare.receipt.parts.create')->middleware('organization.active');
     Route::post('get-spareparts', [SparePartsController::class, 'getSpareParts'])->name('get.spare.parts')->middleware('organization.active');
     // Diagnosis routes
-    Route::post('create/diagnosis', [DiagnosisController::class, 'create'])->name('diagnosis.create')->middleware('organization.active')->middleware('organization.active');
-    Route::delete('delete/diagnosis/{id}', [DiagnosisController::class, 'delete'])->name('diagnosis.delete')->middleware('organization.active')->middleware('organization.active');
+    Route::post('create/diagnosis', [DiagnosisController::class, 'create'])->name('diagnosis.create')->middleware('organization.active');
+    Route::delete('delete/diagnosis/{id}', [DiagnosisController::class, 'delete'])->name('diagnosis.delete')->middleware('organization.active');
 
     // Verification user email
     Route::post('send-code-verificate-email/user', [VerifyEmailController::class, 'sendVerificationCode'])->name('send.code.verificate.email');
@@ -111,19 +112,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('payments-subscriptions', [SubscriptionController::class, 'showSubscriptionForm'])->name('subscription.form.view');
 
     // Repair Documents
-    Route::get('repair-documents', [RepairDocumentsController:: class, 'listDocuments'])->name('repair.documents.view');
+    Route::get('repair-documents', [RepairDocumentsController:: class, 'listDocuments'])->name('repair.documents.view')->middleware('organization.active');
     Route::get(
         '/reports/filter',
         [RepairDocumentsController::class, 'filterDocuments']
-    );
+    )->middleware('organization.active');
 
     // Payment
     Route::post('/paypal/subscriptions/create', [PayPalController::class, 'create']);
     Route::post('/paypal/subscribe', [PayPalController::class, 'create']);
     Route::get('/paypal/success', [PayPalController::class, 'success'])->name('payments.subscriptions.view');
     Route::get('/paypal/cancel', [PayPalController::class, 'cancel']);
-    Route::post('/paypal/webhook', [PayPalWebhookController::class, 'handle']);
     
+    
+
+
+
+    // Debug 
     Route::get('/debug-queue', function () {
     return [
         'queue.default' => config('queue.default'),
@@ -131,7 +136,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'php' => PHP_VERSION,
         'laravel' => app()->version(),
     ];
-});
+    });
+    Route::get('/debug-db', function () {
+    return [
+        'host' => config('database.connections.mysql.host'),
+        'port' => config('database.connections.mysql.port'),
+        'database' => config('database.connections.mysql.database'),
+        'username' => config('database.connections.mysql.username'),
+    ];
+    });
+    
 });
 
 Route::get('approve/spare-parts/{token}', [SparePartsController::class, 'approve'])->name('spare.parts.approve');
